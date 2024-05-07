@@ -1,11 +1,11 @@
 import { listAllUsers, addUser, findUserById } from "../models/user-model.js";
 
-const getUser = (req, res) => {
-  res.json(listAllUsers());
+const getUser = async (req, res) => {
+  res.json(await listAllUsers());
 };
 
-const getUserById = (req, res) => {
-  const user = findUserById(req.params.id);
+const getUserById = async (req, res) => {
+  const user = await findUserById(req.params.id);
   if (user) {
     res.json(user);
   } else {
@@ -13,10 +13,13 @@ const getUserById = (req, res) => {
   }
 };
 
-const postUser = (req, res) => {
-  const result = addUser(req.body);
+const postUser = async (req, res) => {
+  console.log("postUser", req.body);
+  console.log("file", req.file);
+  const result = await addUser(req.body);
   if (result.user_id) {
     res.status(201);
+
     res.json({ message: "New user added.", result });
   } else {
     res.sendStatus(400);
@@ -24,13 +27,11 @@ const postUser = (req, res) => {
 };
 
 const putUser = (req, res) => {
-  res.json({ message: "User updated." });
-  res.sendStatus(200);
+  res.status(200).json({ message: "User updated." });
 };
 
 const deleteUser = (req, res) => {
-  res.json({ message: "User deleted." });
-  res.sendStatus(200);
+  res.status(200).json({ message: "User deleted." });
 };
 
 export { postUser, getUser, getUserById, putUser, deleteUser, addUser };
