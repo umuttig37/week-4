@@ -43,13 +43,10 @@ if (!Array.prototype.reduce) {
             ' is not a function');
       }
 
-      // 1. Let O be ? ToObject(this value).
       var o = Object(this);
 
-      // 2. Let len be ? ToLength(? Get(O, "length")).
       var len = o.length >>> 0;
 
-      // Steps 3, 4, 5, 6, 7
       var k = 0;
       var value;
 
@@ -60,8 +57,7 @@ if (!Array.prototype.reduce) {
           k++;
         }
 
-        // 3. If len is 0 and initialValue is not present,
-        //    throw a TypeError exception.
+
         if (k >= len) {
           throw new TypeError( 'Reduce of empty array ' +
               'with no initial value' );
@@ -69,33 +65,22 @@ if (!Array.prototype.reduce) {
         value = o[k++];
       }
 
-      // 8. Repeat, while k < len
       while (k < len) {
-        // a. Let Pk be ! ToString(k).
-        // b. Let kPresent be ? HasProperty(O, Pk).
-        // c. If kPresent is true, then
-        //    i.  Let kValue be ? Get(O, Pk).
-        //    ii. Let accumulator be ? Call(
-        //          callbackfn, undefined,
-        //          « accumulator, kValue, k, O »).
+
         if (k in o) {
           value = callback(value, o[k], k, o);
         }
 
-        // d. Increase k by 1.
         k++;
       }
 
-      // 9. Return accumulator.
       return value;
     }
   });
 }
 
-// main function
 function serializeJson (form, protected = false) {
   var data = {}, form_arr = [];
-  // export to array
   if(typeof HTMLFormElement === "function" && form instanceof HTMLFormElement) {
     for(var i in form.elements) {
       if(form.elements[i] instanceof HTMLInputElement ||
@@ -108,7 +93,6 @@ function serializeJson (form, protected = false) {
     form_arr = form;
   }
 
-  // serialize to json
   data = form_arr.reduce(function (r, o) {
     var s = r, arr = o.name.split('.');
     arr.forEach((n, k) => {
@@ -144,7 +128,6 @@ function serializeJson (form, protected = false) {
   return data;
 }
 
-// for jquery
 if(typeof jQuery !== "undefined") {
   jQuery.fn.extend({
     serializeJson: function() {
@@ -153,7 +136,6 @@ if(typeof jQuery !== "undefined") {
   });
 }
 
-// for nodejs
 if(typeof module !== "undefined") {
   module.exports = serializeJson;
 }

@@ -4,7 +4,7 @@ import { getUserByUsername } from "../models/user-model.js";
 import "dotenv/config";
 
 const postLogin = async (req, res) => {
-  console.log("postLogin", req.body);
+
   const user = await getUserByUsername(req.body.username);
 
   if (!user) {

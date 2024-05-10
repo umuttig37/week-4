@@ -1,8 +1,7 @@
 "use strict";
-const url = "http://localhost:3000/api/v1"; // change url when uploading to server
-const imageUrl = "http://localhost:3000/uploads/"; // change url when uploading to server
+const url = "http://localhost:3000/api/v1";
+const imageUrl = "http://localhost:3000/uploads/";
 
-// select existing html elements
 const loginWrapper = document.querySelector("#login-wrapper");
 const userInfo = document.querySelector("#user-info");
 const logOut = document.querySelector("#log-out");
@@ -17,15 +16,12 @@ const imageModal = document.querySelector("#image-modal");
 const modalImage = document.querySelector("#image-modal img");
 const close = document.querySelector("#image-modal a");
 
-// luxon date libary
 const dt = luxon.DateTime;
 
-// get user from sessionStorage
 let user = JSON.parse(sessionStorage.getItem("user"));
 console.log(user);
 const startApp = (logged) => {
   console.log(logged);
-  // show/hide forms + cats
   loginWrapper.style.display = logged ? "none" : "flex";
   logOut.style.display = logged ? "block" : "none";
   main.style.display = logged ? "block" : "none";
@@ -39,21 +35,15 @@ const startApp = (logged) => {
   }
 };
 
-// create cat cards
 const createCatCards = (cats) => {
-  // clear ul
   ul.innerHTML = "";
   cats.forEach((cat) => {
-    // create li with DOM methods
     const img = document.createElement("img");
     const [prefix, suffix] = cat.filename.split(".");
     const fileMod = prefix + "_thumb." + suffix;
-    console.log(fileMod);
     img.src = imageUrl + fileMod;
     img.alt = "Image of a cat named " + cat.cat_name;
     img.classList.add("resp");
-    console.log(cat.filename);
-    // open large image when clicking image
     img.addEventListener("click", () => {
       modalImage.src = imageUrl + cat.filename;
       imageModal.alt = cat.name;
@@ -93,7 +83,6 @@ const createCatCards = (cats) => {
     li.appendChild(p3);
     ul.appendChild(li);
     if (user.role === "admin" || user.user_id === cat.owner) {
-      // add modify button
       const modButton = document.createElement("button");
       modButton.innerHTML = "Modify";
       modButton.addEventListener("click", () => {
@@ -102,6 +91,8 @@ const createCatCards = (cats) => {
         inputs[1].value = dt.fromISO(cat.birthdate).toFormat("yyyy-MM-dd");
         inputs[2].value = cat.weight;
         modForm.action = `${url}/cats/${cat.cat_id}`;
+        console.log(user.role);
+        console.log(cat.owner);
         if (user.role === "admin") {
           modForm.querySelector("select").style.display = "block";
           modForm.querySelector("select").value = cat.owner;
@@ -110,7 +101,6 @@ const createCatCards = (cats) => {
         }
       });
 
-      // delete selected cat
       const delButton = document.createElement("button");
       delButton.innerHTML = "Delete";
       delButton.addEventListener("click", async () => {
@@ -138,13 +128,11 @@ const createCatCards = (cats) => {
   });
 };
 
-// close modal
 close.addEventListener("click", (evt) => {
   evt.preventDefault();
   imageModal.classList.toggle("hide");
 });
 
-// AJAX call
 
 const getCat = async () => {
   console.log("getCat token ", sessionStorage.getItem("token"));
@@ -156,18 +144,16 @@ const getCat = async () => {
     };
     const response = await fetch(url + "/cats", options);
     const cats = await response.json();
+    console.log(cats);
     createCatCards(cats);
   } catch (e) {
     console.log(e.message);
   }
 };
 
-// create user options to <select>
 const createUserOptions = (users) => {
-  // clear user list
   userList.innerHTML = "";
   users.forEach((user) => {
-    // create options with DOM methods
     const option = document.createElement("option");
     option.value = user.user_id;
     option.innerHTML = user.name;
@@ -176,7 +162,6 @@ const createUserOptions = (users) => {
   });
 };
 
-// get users to form options
 const getUsers = async () => {
   try {
     const options = {
@@ -192,7 +177,6 @@ const getUsers = async () => {
   }
 };
 
-// submit add cat form
 addForm.addEventListener("submit", async (evt) => {
   evt.preventDefault();
   const fd = new FormData(addForm);
@@ -209,7 +193,6 @@ addForm.addEventListener("submit", async (evt) => {
   getCat();
 });
 
-// submit modify form
 modForm.addEventListener("submit", async (evt) => {
   evt.preventDefault();
   const data = serializeJson(modForm);
@@ -229,7 +212,6 @@ modForm.addEventListener("submit", async (evt) => {
   getCat();
 });
 
-// login
 loginForm.addEventListener("submit", async (evt) => {
   evt.preventDefault();
   const data = serializeJson(loginForm);

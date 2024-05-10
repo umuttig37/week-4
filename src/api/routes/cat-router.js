@@ -19,8 +19,7 @@ const storage = multer.diskStorage({
 
     const originalFilename = file.originalname.split(".")[0].toLowerCase();
     const prefix = `${originalFilename}-${file.fieldname}`;
-    console.log(originalFilename);
-    console.log(file.fieldname);
+
 
     const allowedMimeTypes = [
       "image/jpeg",
@@ -38,14 +37,15 @@ const storage = multer.diskStorage({
     }
 
     const filename = `${prefix}-${suffix}.${extension}`;
-    console.log("PREEEEFIIIIX:", prefix);
-    console.log("SUFFFFIIIIIX:", suffix);
     cb(null, filename);
   },
 });
 const upload = multer({
   dest: "uploads/",
   storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
   fileFilter: (req, file, cb) => {
     if (
       file.mimetype.startsWith("image/") ||

@@ -2,9 +2,9 @@ import promisePool from "../../utils/database.js";
 
 const listAllCats = async () => {
   const [rows] = await promisePool.query(
-    "SELECT cats.*, users.name AS owner_name FROM cats JOIN users ON cats.owner = users.user_id",
+    "SELECT , users.name AS owner FROM cats JOIN users ON cats.owner = users.user_id",
   );
-  console.log("rows", rows);
+
   return rows;
 };
 
@@ -13,7 +13,7 @@ const findCatById = async (id) => {
     "SELECT * FROM cats WHERE cat_id = ?",
     [id],
   );
-  console.log("rows", rows);
+
   if (rows.length === 0) {
     return false;
   }
@@ -24,7 +24,7 @@ const findCatByOwner = async (id) => {
     "SELECT * FROM cats WHERE owner = ?",
     [id],
   );
-  console.log("rows", rows);
+
   if (rows.length === 0) {
     return false;
   }
@@ -36,7 +36,7 @@ const addCat = async (cat) => {
                VALUES (?, ?, ?, ?, ?)`;
   const params = [cat_name, weight, owner, filename, birthdate];
   const rows = await promisePool.execute(sql, params);
-  console.log("rows", rows);
+
   if (rows[0].affectedRows === 0) {
     return false;
   }
@@ -45,6 +45,7 @@ const addCat = async (cat) => {
 
 const modifyCat = async (cat, id, user) => {
   let sql;
+  console.log(user.user_id);
   if (user.role === "admin") {
     sql = promisePool.format(`UPDATE cats SET ? WHERE cat_id = ?`, [cat, id]);
   } else {
@@ -54,7 +55,7 @@ const modifyCat = async (cat, id, user) => {
     );
   }
   const rows = await promisePool.execute(sql);
-  console.log("rows", rows);
+
   if (rows[0].affectedRows === 0) {
     return false;
   }
@@ -62,14 +63,13 @@ const modifyCat = async (cat, id, user) => {
 };
 
 const removeCat = async (id, user) => {
-  console.log("USER", id);
   const [rows] = await promisePool.execute(
     user.role === "admin"
       ? "DELETE FROM cats WHERE cat_id = ?"
       : "DELETE FROM cats WHERE cat_id = ? AND owner = ?",
     user.role === "admin" ? [id] : [id, user.user_id],
   );
-  console.log("rows", rows);
+
   if (rows.affectedRows === 0) {
     return false;
   }

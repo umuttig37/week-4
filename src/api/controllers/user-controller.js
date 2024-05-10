@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { validationResult } from "express-validator";
 
 import {
   listAllUsers,
@@ -22,13 +23,19 @@ const getUserById = async (req, res) => {
 };
 
 const postUser = async (req, res) => {
-  console.log("postUser", req.body);
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Invalid or missing fields");
+    error.status = 400;
+    return next(error);
+  }
   req.body.password = bcrypt.hashSync(req.body.password, 10);
   const result = await addUser(req.body);
   if (result.user_id) {
     res.status(201);
 
-    res.json({ message: "User added.", result });
+    res.json({ message: "New user added.", result });
   } else {
     res.sendStatus(400);
   }
@@ -37,7 +44,7 @@ const postUser = async (req, res) => {
 const putUser = async (req, res) => {
   const result = await modifyUser(req.body, req.params.id, res.locals.user);
   if (result) {
-    res.status(200).json({ message: "User updated." });
+    res.status(200).json({ message: "User item updated." });
   } else {
     res.sendStatus(400);
   }
@@ -46,7 +53,7 @@ const putUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const result = await removeUser(req.params.id, res.locals.user);
   if (result) {
-    res.status(200).json({ message: "User deleted." });
+    res.status(200).json({ message: "User item deleted." });
   } else {
     res.sendStatus(400);
   }
