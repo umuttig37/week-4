@@ -2,7 +2,7 @@ import promisePool from "../../utils/database.js";
 
 const listAllCats = async () => {
   const [rows] = await promisePool.query(
-    "SELECT cats.*, users.name AS owner FROM cats JOIN users ON cats.owner = users.user_id",
+    "SELECT cats.*, users.name AS owner_name FROM cats JOIN users ON cats.owner = users.user_id",
   );
   console.log("rows", rows);
   return rows;
@@ -43,11 +43,16 @@ const addCat = async (cat) => {
   return { cat_id: rows[0].insertId };
 };
 
-const modifyCat = async (cat, id) => {
-  const sql = promisePool.format(`UPDATE cats SET ? WHERE cat_id = ?`, [
-    cat,
-    id,
-  ]);
+const modifyCat = async (cat, id, user) => {
+  let sql;
+  if (user.role === "admin") {
+    sql = promisePool.format(`UPDATE cats SET ? WHERE cat_id = ?`, [cat, id]);
+  } else {
+    sql = promisePool.format(
+      `UPDATE cats SET ? WHERE cat_id = ? AND owner = ?`,
+      [cat, id, user.user_id],
+    );
+  }
   const rows = await promisePool.execute(sql);
   console.log("rows", rows);
   if (rows[0].affectedRows === 0) {
@@ -56,10 +61,13 @@ const modifyCat = async (cat, id) => {
   return { message: "success" };
 };
 
-const removeCat = async (id) => {
+const removeCat = async (id, user) => {
+  console.log("USER", id);
   const [rows] = await promisePool.execute(
-    "DELETE FROM cats WHERE cat_id = ?",
-    [id],
+    user.role === "admin"
+      ? "DELETE FROM cats WHERE cat_id = ?"
+      : "DELETE FROM cats WHERE cat_id = ? AND owner = ?",
+    user.role === "admin" ? [id] : [id, user.user_id],
   );
   console.log("rows", rows);
   if (rows.affectedRows === 0) {

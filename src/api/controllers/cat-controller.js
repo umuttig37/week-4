@@ -3,6 +3,7 @@ import {
   findCatById,
   findCatByOwner,
   listAllCats,
+  modifyCat,
   removeCat,
 } from "../models/cat-model.js";
 
@@ -19,8 +20,6 @@ const getCatById = async (req, res) => {
   }
 };
 const getCatByOwner = async (req, res) => {
-  console.log("TEST");
-  console.log(req.params);
   const cat = await findCatByOwner(req.params.id);
   if (cat) {
     res.json(cat);
@@ -30,26 +29,34 @@ const getCatByOwner = async (req, res) => {
 };
 
 const postCat = async (req, res) => {
-  console.log("postCat", req.body);
-  console.log("file", req.file);
   const filename = req.file.filename;
+  req.body.owner = res.locals.user.user_id;
   const result = await addCat({ ...req.body, filename });
   if (result.cat_id) {
     res.status(201);
 
-    res.json({ message: "New cat added.", result });
+    res.json({ message: "Cat added.", result });
   } else {
     res.sendStatus(400);
   }
 };
 
 const putCat = async (req, res) => {
-  res.status(200).json({ message: "Cat updated." });
+  const result = await modifyCat(req.body, req.params.id, res.locals.user);
+  if (result) {
+    res.status(200).json({ message: "Cat updated." });
+  } else {
+    res.sendStatus(400);
+  }
 };
 
 const deleteCat = async (req, res) => {
-  await removeCat(req.cat_id);
-  res.status(200).json({ message: "Cat deleted." });
+  const result = await removeCat(req.params.id, res.locals.user);
+  if (result) {
+    res.status(200).json({ message: "Cat deleted." });
+  } else {
+    res.sendStatus(404);
+  }
 };
 
 export { getCat, getCatById, postCat, putCat, deleteCat, getCatByOwner };

@@ -1,24 +1,26 @@
-const express = require("express");
-const multer = require("multer");
-const { createThumbnail } = require("../../middlewares.js");
-const {
+import express from "express";
+import multer from "multer";
+import { createThumbnail, authenticateToken } from "../../middlewares.js";
+import {
   getCat,
   getCatById,
   postCat,
   putCat,
   deleteCat,
   getCatByOwner,
-} = require("../controllers/cat-controller.js");
+} from "../controllers/cat-controller.js";
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, "uploads/");
   },
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
     const originalFilename = file.originalname.split(".")[0].toLowerCase();
     const prefix = `${originalFilename}-${file.fieldname}`;
+    console.log(originalFilename);
+    console.log(file.fieldname);
 
     const allowedMimeTypes = [
       "image/jpeg",
@@ -36,11 +38,11 @@ const storage = multer.diskStorage({
     }
 
     const filename = `${prefix}-${suffix}.${extension}`;
-
+    console.log("PREEEEFIIIIX:", prefix);
+    console.log("SUFFFFIIIIIX:", suffix);
     cb(null, filename);
   },
 });
-
 const upload = multer({
   dest: "uploads/",
   storage,
@@ -57,16 +59,18 @@ const upload = multer({
     }
   },
 });
-
 const catRouter = express.Router();
 
-catRouter.get("/", getCat);
-catRouter.post("/", upload.single("file"), createThumbnail, postCat);
+catRouter
+  .route("/")
+  .get(getCat)
+  .post(authenticateToken, upload.single("file"), createThumbnail, postCat);
 
-catRouter.get("/:id", getCatById);
-catRouter.put("/:id", putCat);
-catRouter.delete("/:id", deleteCat);
+catRouter
+  .route("/:id")
+  .get(getCatById)
+  .put(authenticateToken, putCat)
+  .delete(authenticateToken, deleteCat);
 
-catRouter.get("/owner/:id", getCatByOwner);
-
-module.exports = catRouter;
+catRouter.route("/owner/:id").get(getCatByOwner);
+export default catRouter;
